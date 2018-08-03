@@ -14,3 +14,9 @@ make
 
 # Running
 TODO
+
+# Dataset
+
+We use the NABirds V1 dataset (DOI: 10.1109/CVPR.2015.7298658) for
+species classification training, generously available through the 
+[Cornell Lab of O](http://dl.allaboutbirds.org/nabirds).
