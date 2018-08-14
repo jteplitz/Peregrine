@@ -1,0 +1,13 @@
+# Dockerfile for running Peregrine 
+FROM ubuntu:16.04
+
+RUN apt-get update && apt-get install --no-install-recommends -qq \
+ build-essential \
+ libdw-dev \
+ libssl1.0.0
+
+RUN mkdir -p /opt/tensyr
+
+ADD . /opt/tensyr
+
+ENV PATH="/opt/tensyr/runtime/bin:$PATH"

@@ -1,0 +1,20 @@
+[graph]
+  name = "Peregrine"
+  version = 1
+
+[[inputNode]]
+  name = "input-frame"
+  [[inputNode.outputPort]]
+    name = "frame"
+    type = "float*"
+
+[[outputNode]]
+  name = "output-frame"
+  [[outputNode.inputPort]]
+    name = "frame"
+    type = "float*"
+
+# Just pass the frames through for now
+[[edge]]
+  from = "input-frame:frame"
+  to = "output-frame:frame"

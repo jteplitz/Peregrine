@@ -1,0 +1,45 @@
+#!/bin/bash
+function usage() {
+  cat <<-EOF
+Usage: $0 -f <input_file> -i <docker image>
+  Runs Peregrine (Optionally in a docker container)
+EOF
+}
+
+while getopts "f:i:" opt; do
+    case $opt in
+        i) DOCKER_IMAGE=${OPTARG} ;;
+        f) INPUT_FILE=${OPTARG} ;;
+      *|?) usage && exit 1;;
+    esac
+done
+
+if [ -z "$INPUT_FILE" ]
+then
+  usage && exit 1
+fi
+
+if [[ $DOCKER_IMAGE ]]
+then
+TARGET_DIR=/opt/peregrine
+else 
+TARGET_DIR=$(pwd)
+fi
+
+RUN_SCRIPT=.run-script
+cat > ${RUN_SCRIPT} << EOF
+#!/bin/bash
+# Sets some env variables and runs the HALO runtime
+export LD_LIBRARY_PATH=${TARGET_DIR}/lib
+export C_INCLUDE_PATH=${TARGET_DIR}/include
+export HALO_USER_RESOURCE_PATH=${TARGET_DIR}
+input=${TARGET_DIR}/${INPUT_FILE}
+exec hvm <\${input} -c ${TARGET_DIR}/config.conf ${TARGET_DIR}/peregrine.graph 
+EOF
+chmod +x ${RUN_SCRIPT}
+if [[ $DOCKER_IMAGE ]]
+then
+docker run -v $(pwd):${TARGET_DIR} $DOCKER_IMAGE ${TARGET_DIR}/${RUN_SCRIPT}
+else
+  ./${RUN_SCRIPT}
+fi
