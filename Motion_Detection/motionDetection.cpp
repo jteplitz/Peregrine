@@ -9,24 +9,40 @@ int main(int argc, char** argv) {
 
 	cv::VideoCapture vid(filename);
 
-	// cv::Ptr<cv::BackgroundSubtractorMOG2> background;
+	cv::Ptr<cv::BackgroundSubtractorMOG2> background;
+	background = cv::createBackgroundSubtractorMOG2(BACKGROUND_HISTORY,
+													BACKGROUND_THRESHOLD,
+													DETECT_SHADOWS);
 
-	// background = cv::createBackgroundSubtractorMOG2();
+	structuringElement_open = 
+		cv::getStructuringElement(cv::MORPH_ELLIPSE,
+						 	      cv::Size(ELLIPSE_OPEN_SIZE,
+						 	      		   ELLIPSE_OPEN_SIZE));
 
 	if (!vid.isOpened()) {
 		std::cout << "Error" << std::endl;
 		return -1;
 	}
 
-	cv::Mat frame;
+	cv::Mat rawFrame;
+	cv::Mat processFrame;
+
 	cv::Mat foreground;
 
-
 	while(true) {
-		vid >> frame;
-		// background->apply(frame, foreground);
-		cv::imshow("frame", frame);
-		// cv::imshow("foreground", foreground);
+		vid >> rawFrame;
+
+		processFrame = filterFrame(rawFrame);
+
+		background->apply(processFrame, foreground);
+
+
+		char c = (char)cv::waitKey(25);
+		if (c==27) {
+			break;
+		}
+
+		drawContours(foreground, rawFrame);
 	}
 
 
@@ -35,40 +51,22 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-cv::Mat filterFrame(cv::Mat frame) {
-	cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
-	cv::GaussianBlur(frame, frame, cv::Size(BLUR_KERNEL, BLUR_KERNEL), 0, 0);
-	return(frame);
+cv::Mat filterFrame(cv::Mat &inFrame) {
+	cv::Mat outFrame;
+	cv::GaussianBlur(inFrame, outFrame, 
+					 cv::Size(BLUR_KERNEL, BLUR_KERNEL), 0, 0);
+	return(outFrame);
 }
 
-cv::Mat diffFrame(cv::Mat* frameSet) {
-	cv::Mat structuringElement = cv::getStructuringElement(cv::MORPH_ELLIPSE, 
-														   cv::Size(50, 50));
-
-	cv::Mat d1;
-	cv::Mat d2;
-
-	cv::Mat diffs;
-
-	cv::absdiff(frameSet[0], frameSet[1], d1);
-	cv::absdiff(frameSet[1], frameSet[2], d2);
-
-	cv::bitwise_xor(d1, d2, diffs);
-
-	cv::Mat dilated;
-
-	cv::morphologyEx(diffs, dilated, cv::MORPH_CLOSE, structuringElement);
-
-	return(dilated);
-}
-
-void drawContours(cv::Mat frame, cv::Mat orgFrame) {
+void drawContours(cv::Mat &frame, cv::Mat &rawFrame) {
 	cv::Mat edges;
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
 
+	cv::Mat opened;
+	cv::morphologyEx(frame, opened, cv::MORPH_OPEN, structuringElement_open);
 
-	cv::Canny(frame, edges, EDGE_THRESH, EDGE_THRESH*2, 3);
+	cv::Canny(opened, edges, EDGE_THRESH, EDGE_THRESH*2, 3);
 	cv::findContours(edges, contours, hierarchy, cv::RETR_TREE, 
 					 cv::CHAIN_APPROX_SIMPLE, cv::Point(0,0));
 
@@ -83,12 +81,13 @@ void drawContours(cv::Mat frame, cv::Mat orgFrame) {
 		cv::approxPolyDP(cv::Mat(contours[i]), contours_poly[i], 3, true);
 		rects[i] = cv::boundingRect(cv::Mat(contours_poly[i]));
 
-		// cv::drawContours(orgFrame, contours, i, color, 2, 8, 
-		// 				 hierarchy, 0, cv::Point());
-		cv::rectangle(orgFrame, rects[i].tl(), rects[i].br(), color, 2, 8, 0);
+		cv::drawContours(edges, contours, i, color, 2, 8, 
+						 hierarchy, 0, cv::Point());
+		cv::rectangle(rawFrame, rects[i].tl(), rects[i].br(), color, 2, 8, 0);
 	}
 
-	cv::imshow("contours", orgFrame);
+	cv::imshow("edges", edges);
+	cv::imshow("raw", rawFrame);
 }
 
 
