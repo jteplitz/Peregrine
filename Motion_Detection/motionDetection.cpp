@@ -9,36 +9,26 @@ int main(int argc, char** argv) {
 
 	cv::VideoCapture vid(filename);
 
+	// cv::Ptr<cv::BackgroundSubtractorMOG2> background;
+
+	// background = cv::createBackgroundSubtractorMOG2();
+
 	if (!vid.isOpened()) {
 		std::cout << "Error" << std::endl;
 		return -1;
 	}
 
-	cv::Mat frameSet[3];
-	cv::Mat rawFrame;
+	cv::Mat frame;
+	cv::Mat foreground;
 
-	for (int i = 0; i < 3; i++) {
-		vid >> rawFrame;
 
-		frameSet[i] = filterFrame(rawFrame);
+	while(true) {
+		vid >> frame;
+		// background->apply(frame, foreground);
+		cv::imshow("frame", frame);
+		// cv::imshow("foreground", foreground);
 	}
 
-	do {
-		cv::Mat diffs = diffFrame(frameSet);
-		drawContours(diffs, rawFrame);
-
-		char c = (char)cv::waitKey(25);
-		if (c==27) {
-			break;
-		}
-
-		vid >> rawFrame;
-
-		frameSet[2] = frameSet[1];
-		frameSet[1] = frameSet[0];
-		frameSet[0] = filterFrame(rawFrame);
-	}
-	while(!frameSet[0].empty());
 
 	vid.release();
 	cv::destroyAllWindows();
