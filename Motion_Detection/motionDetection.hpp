@@ -2,8 +2,8 @@
 
 #include <opencv2/opencv.hpp>
 
-static const int BACKGROUND_HISTORY = 5000;
-static const int BACKGROUND_THRESHOLD = 100;
+static const int BACKGROUND_HISTORY = 3000;
+static const int BACKGROUND_THRESHOLD = 150;
 static const bool DETECT_SHADOWS = false;
 
 static const int ELLIPSE_OPEN_SIZE = 10;
@@ -11,6 +11,8 @@ static const int ELLIPSE_OPEN_SIZE = 10;
 static const int BLUR_KERNEL = 11;
 
 static const int EDGE_THRESH = 10;
+
+static const double MERGE_EPS = 0.01;
 
 cv::Mat structuringElement_open;
 
