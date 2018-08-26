@@ -26,7 +26,11 @@ inside of the install directory (make sure to cd to the install directory first)
 ## Docker
 HALO only supports Ubuntu 16.04, but you can use the provided dockerfile to
 run Peregrine on any linux system.
-Build the dockerfile (runtime.df) within /opt/tensyr.
+Build the dockerfile (runtime.df) and point the env to a folder with the HALO
+debian. I.e.:
+```
+  docker build -f runtime.df /path/to/halo/deb
+```
 The run script supports running Peregrine inside a docker container.
 You'll need to specify an image via the `-i` flag.
 
