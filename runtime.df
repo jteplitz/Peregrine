@@ -4,10 +4,29 @@ FROM ubuntu:16.04
 RUN apt-get update && apt-get install --no-install-recommends -qq \
  build-essential \
  libdw-dev \
- libssl1.0.0
+ libssl1.0.0 \
+ cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+
+ENV GIT_SSL_NO_VERIFY=true
+
+RUN mkdir /tmp/opencv && \
+  cd /tmp/opencv &&\
+  git clone http://github.com/opencv/opencv.git
+
+RUN cd /tmp/opencv/opencv &&\
+  git checkout 3.4.2&&\
+  mkdir build && cd build &&\
+  cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local .. &&\
+  make -j4
+  
+RUN cd /tmp/opencv/opencv/build &&\
+  make install
 
 RUN mkdir -p /opt/tensyr
 
-ADD . /opt/tensyr
+#ADD . /opt/tensyr
+
+ADD halo_0.0.3_amd64.deb /tmp/halo_amd64.deb
+RUN dpkg -i /tmp/halo_amd64.deb
 
 ENV PATH="/opt/tensyr/runtime/bin:$PATH"

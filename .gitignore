@@ -12,3 +12,6 @@
 
 # Build
 build/
+
+# HALO binaries
+halo_*.deb
