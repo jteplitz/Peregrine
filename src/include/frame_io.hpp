@@ -6,6 +6,7 @@ extern "C" {
   // Forward declare FrameReader since it's a C++ types.
   // Definition is in src/frame_io.cpp
   typedef struct FrameReader FrameReader;
+  typedef struct FrameWriter FrameWriter;
 
   // Frame Reader
   FrameReader* InitFrameReader(const char*, size_t);
@@ -13,9 +14,9 @@ extern "C" {
   void FiniFrameReader(FrameReader*);
 
   // Frame Writer
-  void* InitFrameWriter(const char*, size_t);
-  void WriteFrame(void*, float*);
-  void FiniFrameWriter(void*);
+  FrameWriter* InitFrameWriter(const char*, size_t);
+  void WriteFrame(FrameWriter*, float*);
+  void FiniFrameWriter(FrameWriter*);
 
 #ifdef __cplusplus
 }

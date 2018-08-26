@@ -1,12 +1,14 @@
 project(Peregrine CXX)
-cmake_minimum_required(VERSION 3.6)
-set(TENSYR_ROOT_DIR /opt/tensyr)
+cmake_minimum_required(VERSION 3.5)
+set(TENSYR_ROOT_DIR /opt/halo)
 
 # The install directory contains our files
 # In the HALO SDK recommended layout
 if(${CMAKE_INSTALL_PREFIX} STREQUAL "/usr/local") # Allow the user to overwrite
   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install)
 endif()
+
+set(CMAKE_CXX_STANDARD 11)
 
 include_directories(${PROJECT_SOURCE_DIR}/src/include)
 include_directories(${TENSYR_ROOT_DIR}/runtime/include)
