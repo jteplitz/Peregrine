@@ -22,11 +22,7 @@ RUN cd /tmp/opencv/opencv &&\
 RUN cd /tmp/opencv/opencv/build &&\
   make install
 
-RUN mkdir -p /opt/tensyr
-
-#ADD . /opt/tensyr
-
 ADD halo_0.0.3_amd64.deb /tmp/halo_amd64.deb
 RUN dpkg -i /tmp/halo_amd64.deb
 
-ENV PATH="/opt/tensyr/runtime/bin:$PATH"
+ENV PATH="/opt/halo/runtime/bin:$PATH"
