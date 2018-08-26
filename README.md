@@ -18,6 +18,11 @@ make install
 This will create a new install directory inside of your build directory
 with all of Peregrine's runnable artificats.
 
+## Depedencies
+Peregrine depends on opencv and ffmpeg. You can either install these or
+use the docker image (runtime.df). If using the docker image, you can run
+`enter-container.sh` to run make inside the image
+
 # Running
 
 Once you have an install directory, just run the `run` script
