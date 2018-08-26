@@ -22,6 +22,8 @@ with all of Peregrine's runnable artificats.
 
 Once you have an install directory, just run the `run` script
 inside of the install directory (make sure to cd to the install directory first).
+This will take in a video (with the -f flag) and output to a file called
+`video_out.mp4`
 
 ## Docker
 HALO only supports Ubuntu 16.04, but you can use the provided dockerfile to
