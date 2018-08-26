@@ -26,3 +26,6 @@ install(FILES ${PROJECT_SOURCE_DIR}/src/config.conf DESTINATION .)
 install(FILES ${PROJECT_SOURCE_DIR}/src/peregrine.graph DESTINATION .)
 # Install our run script
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/src/run DESTINATION .)
+
+# Install test data
+install (FILES ${PROJECT_SOURCE_DIR}/Motion_Detection/motiontest_feeder.mp4 DESTINATION videos/)

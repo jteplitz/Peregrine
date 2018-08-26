@@ -29,17 +29,18 @@ fi
 RUN_SCRIPT=.run-script
 cat > ${RUN_SCRIPT} << EOF
 #!/bin/bash
+set -xo pipefail
 # Sets some env variables and runs the HALO runtime
 export LD_LIBRARY_PATH=${TARGET_DIR}/lib
 export C_INCLUDE_PATH=${TARGET_DIR}/include
 export HALO_USER_RESOURCE_PATH=${TARGET_DIR}
 input=${TARGET_DIR}/${INPUT_FILE}
-exec hvm <\${input} -c ${TARGET_DIR}/config.conf ${TARGET_DIR}/peregrine.graph 
+exec ffmpeg -loglevel error -threads 1 -y -r 30 -i \${input} -vcodec rawvideo -s 640x360 -pix_fmt +rgb24 -f rawvideo pipe:1 | hvm -c ${TARGET_DIR}/config.conf ${TARGET_DIR}/peregrine.graph | ffmpeg -loglevel error -threads 1 -y -r 30 -vcodec rawvideo -s 640x360 -pix_fmt rgb24 -f rawvideo -i pipe:0 ${TARGET_DIR}/video_out.mp4
 EOF
 chmod +x ${RUN_SCRIPT}
 if [[ $DOCKER_IMAGE ]]
 then
-docker run -v $(pwd):${TARGET_DIR} $DOCKER_IMAGE ${TARGET_DIR}/${RUN_SCRIPT}
+docker run -p 8080:8080 -v $(pwd):${TARGET_DIR} $DOCKER_IMAGE ${TARGET_DIR}/${RUN_SCRIPT}
 else
   ./${RUN_SCRIPT}
 fi

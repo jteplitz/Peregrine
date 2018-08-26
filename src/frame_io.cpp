@@ -6,6 +6,8 @@
 #include <system_error>
 #include <new>
 #include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include <tensyr/memory.h>
 
@@ -30,13 +32,19 @@ static void MakeFdNonBlocking(int fd) {
   }
 }
 
+// TODO(jason): Some saner way to shutdown
+// Perhaps signal to HALO that this device will never produce more output?
+static void Shutdown() {
+  kill(getppid(), SIGINT);
+}
+
 template <class T>
 class RingBuffer {
 public:
   RingBuffer(size_t capacity) :
     capacity_(capacity),
     head_(0),
-    tail_(capacity_),
+    tail_(capacity_ - 1),
     ring_(new T const *[capacity]) {
       if (capacity & (capacity - 1)  != 0)  {
         std::cerr << "Ring buffer capacity must be a power of 2" << std::endl;
@@ -48,7 +56,14 @@ public:
   /// Push a new element into the ring buffer (will overwrite an old element if
   // the buffer is full)
   void Push(const T* obj) {
-    ring_[++tail_] = obj;
+    auto idx = ++tail_ & (capacity_ - 1);
+    if (ring_[idx]) {
+      //HaloReleaseReadOnlyObject(ring_[idx]);
+      // TODO(jason): remove copying and use HaloFree
+      free(const_cast<unsigned char*>(ring_[idx]));
+    }
+    ring_[idx] = obj;
+    tail_ = idx;
   }
 
   /// Pop an element off the front of the ring buffer
@@ -56,7 +71,8 @@ public:
   const T* Pop() {
     auto obj = ring_[head_];
     if (obj) {
-      ring_[head_++] = nullptr;
+      ring_[head_] = nullptr;
+      head_ = (head_ + 1) & (capacity_ - 1);
     }
     return obj;
   }
@@ -72,7 +88,7 @@ private:
 
 extern "C"{
   // TODO(jason): Use userDataParse in HALO SDK (in next release) to get data from config
-#define FRAME_SIZE 420
+#define FRAME_SIZE 230400
 #define INPUT_FD 0
 #define OUTPUT_FD 1
 
@@ -94,6 +110,9 @@ struct FrameReader {
       std::cerr << "Error reading from fd " << fd_ << "; " << strerror(error_code) << std::endl;
       std::error_code errc(error_code, std::system_category());
       throw std::system_error(errc);
+    }
+    if (bytes_read == 0) {
+      Peregrine::Shutdown();
     }
     bytes_written_ += static_cast<size_t>(bytes_read);
     if (bytes_written_ == frame_size_) {
@@ -131,13 +150,10 @@ public:
     }
 
   void WriteFrame(const unsigned char* frame) {
-    Drain();
-    HaloRetainReadOnlyObject(frame);
-    if (!current_frame_) {
-      current_frame_ = frame;
-    } else {
-      pending_frames_.Push(frame);
-    }
+    // TODO(jason): Use HaloRetain here instead of copying
+    unsigned char* private_frame = new unsigned char[frame_size_];
+    memcpy(private_frame, frame, frame_size_);
+    pending_frames_.Push(private_frame);
     Drain();
   }
 
@@ -180,7 +196,9 @@ private:
       }
       bytes_written_ += written;
       if (bytes_written_ == frame_size_) {
-        HaloReleaseReadOnlyObject(current_frame_);
+        //HaloReleaseReadOnlyObject(current_frame_);
+        // TODO(jason): remove copying and use HaloFree
+        free(const_cast<unsigned char*>(current_frame_));
         current_frame_ = pending_frames_.Pop();
         bytes_written_ = 0;
       }

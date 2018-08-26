@@ -18,6 +18,10 @@ RUN cd /tmp/opencv/opencv &&\
   mkdir build && cd build &&\
   cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local .. &&\
   make -j4
+
+# Add ffmpeg (for video conversion)
+# TODO(gstreamer?)
+RUN apt-get install --no-install-recommends -qq ffmpeg
   
 RUN cd /tmp/opencv/opencv/build &&\
   make install
