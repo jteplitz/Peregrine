@@ -12,9 +12,24 @@ static const int BLUR_KERNEL = 11;
 
 static const int EDGE_THRESH = 10;
 
-cv::RNG rng;
 cv::Mat structuringElement_open;
 
+// void rawToMat();
 
-cv::Mat filterFrame(cv::Mat&);
-void drawContours(cv::Mat&, cv::Mat& rawFrame);
+void preFilterFrame(cv::Mat&, cv::Mat&);
+void postFilterFrame(cv::Mat&, cv::Mat&);
+
+void getEdges(cv::Mat&, cv::Mat&);
+
+void getContours(cv::Mat&, 
+				 std::vector<std::vector<cv::Point>>&,
+				 std::vector<cv::Vec4i>&);
+
+
+void getBoundingBoxes(std::vector<std::vector<cv::Point>>&,
+					  std::vector<cv::Rect>&);
+
+// void mergeBoundingBoxes(std::vector<cv::Rect>&,
+// 						std::vector<cv::Rect>&);
+
+void exportBoundingBoxes(cv::Mat, std::vector<cv::Rect>&);
