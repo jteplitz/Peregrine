@@ -113,7 +113,7 @@ void exportBoundingBoxes(cv::Mat frame,
 
 	for (unsigned int i = 0; i < boxes.size(); i++) {
 		cv::rectangle(frame, boxes[i].tl(), boxes[i].br(), color, 2, 8, 0);
-	} 
+	}
 
 	cv::imshow("boxes!", frame);
 }

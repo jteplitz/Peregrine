@@ -1,20 +1,65 @@
 [graph]
   name = "Peregrine"
-  version = 1
+  version = "1"
 
 [[inputNode]]
   name = "input-frame"
   [[inputNode.outputPort]]
     name = "frame"
-    type = "float*"
+    type = "unsigned char*"
 
 [[outputNode]]
   name = "output-frame"
   [[outputNode.inputPort]]
     name = "frame"
-    type = "float*"
+    type = "unsigned char*"
 
-# Just pass the frames through for now
+[[node]]
+  name = "MotionDetection"
+  fun = "DetectMotion"
+  type = "sharedLibrary"
+  include = "peregrine.hpp"
+  sharedLibrary = "libperegrine.so"
+  # Hard code for now to allow static variables
+  # TODO(jason): Change to put cv data in KV store once released
+  requiredExecutor = "cpu-2"
+  [[node.inputPort]]
+    name = "frame"
+    type = "unsigned char*"
+    readOnly = true
+  [[node.outputPort]]
+    name = "boxes"
+    type = "Boxes*"
+
+[[node]]
+  name = "Draw"
+  fun = "DrawBoxes"
+  type = "sharedLibrary"
+  include = "peregrine.hpp"
+  sharedLibrary = "libperegrine.so"
+  [[node.inputPort]]
+    name = "frame"
+    type = "unsigned char*"
+  [[node.inputPort]]
+    name = "boxes"
+    type = "Boxes*"
+    readOnly = true
+  [[node.outputPort]]
+    name = "annotated_frame"
+    type = "unsigned char*"
+
 [[edge]]
   from = "input-frame:frame"
+  to = "MotionDetection:frame"
+
+[[edge]]
+  from = "input-frame:frame"
+  to = "Draw:frame"
+
+[[edge]]
+  from = "MotionDetection:boxes"
+  to = "Draw:boxes"
+
+[[edge]]
+  from = "Draw:annotated_frame"
   to = "output-frame:frame"

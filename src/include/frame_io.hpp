@@ -10,12 +10,12 @@ extern "C" {
 
   // Frame Reader
   FrameReader* InitFrameReader(const char*, size_t);
-  float* ReadFrame(FrameReader*);
+  unsigned char* ReadFrame(FrameReader*);
   void FiniFrameReader(FrameReader*);
 
   // Frame Writer
   FrameWriter* InitFrameWriter(const char*, size_t);
-  void WriteFrame(FrameWriter*, float*);
+  void WriteFrame(FrameWriter*, unsigned char*);
   void FiniFrameWriter(FrameWriter*);
 
 #ifdef __cplusplus

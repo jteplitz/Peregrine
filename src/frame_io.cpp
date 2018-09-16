@@ -11,6 +11,7 @@
 
 #include <tensyr/memory.h>
 
+#include <common.hpp>
 #include <frame_io.hpp>
 
 namespace Peregrine {
@@ -46,7 +47,7 @@ public:
     head_(0),
     tail_(capacity_ - 1),
     ring_(new T const *[capacity]) {
-      if (capacity & (capacity - 1)  != 0)  {
+      if ((capacity & (capacity - 1))  != 0)  {
         std::cerr << "Ring buffer capacity must be a power of 2" << std::endl;
         raise(SIGABRT);
       }
@@ -88,7 +89,7 @@ private:
 
 extern "C"{
   // TODO(jason): Use userDataParse in HALO SDK (in next release) to get data from config
-#define FRAME_SIZE 230400
+#define FRAME_SIZE 691200
 #define INPUT_FD 0
 #define OUTPUT_FD 1
 
@@ -103,7 +104,7 @@ struct FrameReader {
       Peregrine::MakeFdNonBlocking(fd_);
     }
 
-  float* ReadFrame() {
+  unsigned char* ReadFrame() {
     ssize_t bytes_read = read(fd_, pending_buffer_ + bytes_written_, frame_size_ - bytes_written_);
     if (bytes_read == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
       auto error_code = errno;
@@ -116,7 +117,7 @@ struct FrameReader {
     }
     bytes_written_ += static_cast<size_t>(bytes_read);
     if (bytes_written_ == frame_size_) {
-      auto frame = reinterpret_cast<float*>(pending_buffer_);
+      auto frame = reinterpret_cast<unsigned char*>(pending_buffer_);
       pending_buffer_ = static_cast<unsigned char*>(HaloMalloc(frame_size_));
       if (pending_buffer_ == nullptr) {
         throw std::bad_alloc();
@@ -215,6 +216,8 @@ private:
 
 // Frame Reader
 FrameReader* InitFrameReader(const char* data, size_t len) {
+  CONSUME_UNUSED(data);
+  CONSUME_UNUSED(len);
   try {
     return new FrameReader(INPUT_FD, FRAME_SIZE);
   } catch (std::exception& e) {
@@ -224,7 +227,7 @@ FrameReader* InitFrameReader(const char* data, size_t len) {
   }
 }
 
-float* ReadFrame(FrameReader* reader) {
+unsigned char* ReadFrame(FrameReader* reader) {
   try {
     return reader->ReadFrame();
   } catch (std::exception& e) {
@@ -240,6 +243,8 @@ void FiniFrameReader(FrameReader* reader) {
 
 // Frame Writer
 FrameWriter* InitFrameWriter(const char* data, size_t len) {
+  CONSUME_UNUSED(data);
+  CONSUME_UNUSED(len);
   try {
     return new FrameWriter(OUTPUT_FD, FRAME_SIZE);
   } catch (std::exception& e) {
@@ -249,7 +254,7 @@ FrameWriter* InitFrameWriter(const char* data, size_t len) {
   }
 }
 
-void WriteFrame(FrameWriter* writer, float* frame) {
+void WriteFrame(FrameWriter* writer, unsigned char* frame) {
   try {
     return writer->WriteFrame(reinterpret_cast<unsigned char*>(frame));
   } catch (std::exception& e) {

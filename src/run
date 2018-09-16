@@ -31,7 +31,7 @@ cat > ${RUN_SCRIPT} << EOF
 #!/bin/bash
 set -xo pipefail
 # Sets some env variables and runs the HALO runtime
-export LD_LIBRARY_PATH=${TARGET_DIR}/lib
+export LD_LIBRARY_PATH=${TARGET_DIR}/lib:/usr/local/lib
 export C_INCLUDE_PATH=${TARGET_DIR}/include
 export HALO_USER_RESOURCE_PATH=${TARGET_DIR}
 input=${TARGET_DIR}/${INPUT_FILE}
